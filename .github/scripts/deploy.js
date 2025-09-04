@@ -16,10 +16,30 @@ async function calculateFileHash(filePath) {
 
 async function getLocalFiles(dir) {
   let fileList = [];
+  const ignorePatterns = [
+    'node_modules',
+    '.git',
+    '.github',
+    'package.json',
+    'package-lock.json',
+    '.gitignore',
+    'sftp_deploy_state.json',
+    '.DS_Store'
+  ];
+
+  function isIgnored(filePath) {
+    return ignorePatterns.some(pattern => filePath.includes(pattern));
+  }
+
   function walkSync(currentDirPath, callback) {
     fs.readdirSync(currentDirPath).forEach(function (name) {
       let filePath = path.join(currentDirPath, name);
       let stat = fs.statSync(filePath);
+
+      if (isIgnored(filePath)) {
+        return;
+      }
+
       if (stat.isFile()) {
         callback(filePath, stat);
       } else if (stat.isDirectory()) {
